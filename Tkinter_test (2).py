@@ -1,22 +1,26 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[17]:
+# In[4]:
 
 
 from tkinter import*
 from tkinter import filedialog
 from tkinter import ttk
+#from tkinter import askopenfilename
 import pandas as pd
 from tkinter.messagebox import*
 from tkinter.filedialog import askopenfilename
 import csv
 import math
 from decimal import*
+from tkinter import*
+
+getcontext().prec = 3
 
 root = Tk()
 root.iconbitmap('STRATV.ico')
-root.title('STRAT-V')
+
 
 style = ttk.Style()
 style.theme_use('clam')
@@ -27,8 +31,8 @@ print(style.element_options("Horizontal.TScrollbar.thumb"))
 
 # configure the style
 style.configure("Horizontal.TScrollbar", gripcount=0,
-                background="#2196f3", darkcolor="#2196f3", lightcolor="grey",
-                troughcolor="#2196f3", bordercolor="grey", arrowcolor="white")
+                background="Green", darkcolor="DarkGreen", lightcolor="LightGreen",
+                troughcolor="gray", bordercolor="blue", arrowcolor="white")
 
 #Create a main frame
 main_frame = Frame(root,bg='#d6ebfb')
@@ -42,7 +46,7 @@ my_canvas.pack(side = LEFT, fill=BOTH, expand = 1)
 #Add a scrollbar to the canvas
 my_scrollbar = ttk.Scrollbar(main_frame, orient = VERTICAL, command = my_canvas.yview)
 my_scrollbar.pack(side=RIGHT, fill = Y)
-my_scrollbarx = ttk.Scrollbar(root, orient=HORIZONTAL, command=my_canvas.xview)
+my_scrollbarx = ttk.Scrollbar(main_frame, orient=HORIZONTAL, command=my_canvas.xview)
 my_scrollbarx.pack(side=BOTTOM, fill = X)
 #Configure the canvas
 my_canvas.configure(xscrollcommand=my_scrollbarx.set, yscrollcommand = my_scrollbar.set)
@@ -60,32 +64,49 @@ my_canvas.create_window((0,0), window = second_frame, anchor = 'nw')
 
 
 
-
+root.title('STRAT-V')
 #frame_1 = LabelFrame(second_frame,text ='Input Data', bd = 2,bg = '#ebffd4', relief = GROOVE).place(height =750, width =6000)
 #frame_2 = LabelFrame(second_frame,text = 'Calculate',bd = 2,bg ='#c8f1f7', relief = RAISED).place(height =750, width =500)
-#frame_3 = Frame(root, bd=5,bg='grey').grid(row =2, column =1)
 
-#my_canvas.configure(xscrollcommand=frame_1scrollbarx.set)
-#canvas.create_window((0,0), window=frame_1, anchor='nw')
 
 def donothing():
       x = 0
 
+def quit():
+       root.destroy 
+        
+        
+def save():
+    contents = Label.get(1.0,"end-1c") #store the contents of the text widget in a str
+    try:                                       #this try/except block checks to
+        with open(f, 'w') as outputFile:  #see if the str containing the output
+            outputFile.write(contents)         #file (self.f) exists, and we can write to it,
+    except AttributeError:                     #and if it doesn't,
+        save_as()                         #call save_as
+
+def save_as():
+    contents = Label.get(1.0,"end-1c")
+    f = tkFileDialog.asksaveasfilename(   #this will make the file path a string
+        defaultextension=".z",                 #so it's easier to check if it exists
+        filetypes = (("textfile", "*.txt"),    #in the save function
+                     ("All files", "*.")))
+    with open(f, 'w') as outputFile:
+        outputFile.write(contents)        
+        
+        
+        
         
 #===========================================================================================================================
 def Load_File():
-
+    global label_file
     import_file=Tk()
-    import_file.iconbitmap('STRATV.ico')
-    import_file.title('STRAT-V')
     import_file.geometry('500x500')
     import_file.pack_propagate(False)
-    #import_file.resizable(0,0)
+    import_file.resizable(0,0)
 
     #frame for Treeview
     frame3=LabelFrame(import_file,text='Data File')
-    #frame3.place(height=250, width=500)
-    frame3.place(relheight=0.5, relwidth=1)
+    frame3.place(height=350, width=500)
 
     #Frame for open filedialog
     file_frame=LabelFrame(import_file, text='Open File')
@@ -109,8 +130,7 @@ def Load_File():
 
     treescrolly = Scrollbar(frame3, orient='vertical',command=tv1.yview)
     treescrollx = Scrollbar(frame3, orient='horizontal',command=tv1.xview)
-    tv1.configure(xscrollcommand=treescrollx.set)
-    tv1.configure(yscrollcommand=treescrolly.set)
+    tv1.configure(xscrollcommand=treescrollx.set, yscrollcommand=treescrolly.set)
     treescrollx.pack(side='bottom', fill='x')
     treescrolly.pack(side='right', fill='y')
 
@@ -205,13 +225,12 @@ filemenu = Menu(menubar, tearoff=0)
 filemenu.add_command(label="New", command=donothing)
 filemenu.add_command(label="Open", command=openfile)
 filemenu.add_command(label="Load", command=Load_File)
-filemenu.add_command(label="Save", command=donothing)
-filemenu.add_command(label="Save as...", command=donothing)
-filemenu.add_command(label="Close", command=donothing)
+filemenu.add_command(label="Save", command=save)
+filemenu.add_command(label="Save as...", command=save_as)
 
 filemenu.add_separator()
 
-filemenu.add_command(label="Exit", command=root.quit)
+filemenu.add_command(label="Exit", command=quit)
 menubar.add_cascade(label="File", menu=filemenu)
 editmenu = Menu(menubar, tearoff=0)
 editmenu.add_command(label="Undo", command=donothing)
@@ -231,7 +250,6 @@ helpmenu.add_command(label="About...", command=donothing)
 menubar.add_cascade(label="Help", menu=helpmenu)
 
 # create the Output menu
-#output = Menu(menu)
 outputmenu = Menu(menubar, tearoff=0)
 outputmenu.add_command(label="Tabular results and graphs",command = results_and_graph_gui)
 outputmenu.add_command(label="Flood front location plot", command = front_location_plots_gui)
@@ -245,52 +263,16 @@ loadmenu.add_command(label="Load Data",command =  Load_File)
 #added "file" to our menu
 menubar.add_cascade(label="Load", menu=loadmenu)
 
-
 root.config(menu=menubar)
 
 
 #===============================================================================================================================        
- #Reservoir and Process Data initialization and definiton.
+
     
- # Creating Heading
-#Input_header = Label(second_frame, text = ('Enter Input Variables'),fg = '#b22222', relief = RAISED).grid(row =0, column = 0, columnspan = 3, sticky = W+E+N+S)
+    # Creating Heading
+Input_header = Label(second_frame, text = ('Enter Input Variables'),fg = '#b22222', bg = '#d6ebfb').grid(row =0, column = 0, columnspan = 3, sticky = W+E+N+S)
 
-Length_of_bed_ft = 2896
-
-width_of_bed_ft = 2000
-
-average_porosity = 0.25
-
-VISO = 3.6
-
-VISW = 0.95
-
-OFVF = 1.11
-
-WFVF = 1.01
-
-SWI = 0.2
-
-SGI = 0.16
-
-SOI = 0.65
-
-SOR = 0.35
-
-#Constant Injection Rate in STB/D
-Constant_injection_rate = 1800
-
-#Injection Pressure Differential in PSI
-Inj_Pressure_differential = 700
-
-Residual_gas_saturation_unswept_area = 0.06
-
-Residual_gas_saturation_swept_area = 0.02
-
-Residual_gas_saturation = Residual_gas_saturation_unswept_area+Residual_gas_saturation_swept_area
-
-#==========================================================================================================================
-
+#===========================================================================================================================
 
 def enter_inputs():
     global Length_of_bed_ft
@@ -331,7 +313,7 @@ def enter_inputs():
         RGS = ("%8.2f" % RGS).strip()
         entries['Residual_gas_saturation'].delete(0, END)
         entries['Residual_gas_saturation'].insert(0, RGS)
-      
+       # print("Monthly Payment: %f" % float(monthly))
 
 
     def makeform(inputs, fields):
@@ -349,29 +331,30 @@ def enter_inputs():
                      pady=5)
             lab.pack(side=LEFT)
             ent.pack(side=RIGHT, 
-                     expand=YES,padx = 100, 
+                     expand=YES,padx = 50, 
                      fill=X)
             entries[field] = ent
         return entries
-    
+    def quit():
+        inputs.quit
     if __name__ == '__main__':
         inputs = Tk()
-        inputs.iconbitmap('STRATV.ico')
-        inputs.title('STRAT-V')
         ents = makeform(inputs, fields)
         b1 = Button(inputs, text='Residual gas saturation',
                command=(lambda e=ents:residual_gas_saturation(e)))
         b1.pack(side=LEFT, padx=5, pady=5)
+        b3 = Button(inputs, text='Quit', command=quit)
+        b3.pack(side=LEFT, padx=5, pady=5)
         inputs.mainloop() 
-Enter_input_button = Button(second_frame, text = 'Enter input data',justify = LEFT,relief= RAISED,cursor='hand2',command = enter_inputs).grid(row=2,column =0,padx=5,pady=10)    
-
-#===============================================================================================================================        
+Enter_input_button = Button(second_frame, text = 'Enter input data',justify = LEFT,relief= RAISED, command = enter_inputs).grid(row=2,column =0,padx=5,pady=10)    
 
 
-    
-Label(second_frame, text='Calculate',fg = 'white', bg = '#2196f3',justify = CENTER,relief= FLAT).grid(row=0, column=4, columnspan = 8,padx = 40,pady=10, sticky = W+E+N+S)
 
-#Importing the Permeability Porosity distribution data
+
+
+#==========================================================================================================================
+Label(second_frame, text='Calculate',bg = '#2196f3',justify = CENTER,relief= FLAT).grid(row=0, column=4, columnspan = 8,padx = 40,pady=10, sticky = W+E+N+S)
+
 bed_data = pd.read_csv('Permeability_Porosity_distribution_data.csv')
 
 #===========================================================================================================================      
@@ -387,7 +370,6 @@ bed_data_sort = bed_data.sort_values(by='PERMEABILITY', ascending=False)
 #Importing the Relative permeability Data
 import pandas as pd
 RPERM_data = pd.read_csv('Oil_Water_Relative_Permeability_data.csv')
-
 
 #==========================================================================================================================
 
@@ -420,30 +402,56 @@ List_of_permeability_ratio_DataTable = pd.DataFrame(List_of_permeability_ratio).
 
 #==========================================================================================================================
 
-# Calculating the average porosity
-
 def average_porosity():
+    #global Average_porosity
     Average_porosity = '%.3f' % np.mean(bed_data_sort.POROSITY)
     Label(second_frame, text= str(Average_porosity),justify = LEFT, relief = SUNKEN).grid(row = 3, column = 6,padx = 40,pady=5, sticky =W)
-Button(second_frame,text='Average Porosity',bg = '#337ab7',fg = 'white',cursor='hand2', command=average_porosity).grid(row=2,column=6,padx = 40,pady=10, sticky =W)
+Button(second_frame,text='Average Porosity',bg = '#337ab7',fg = 'white', command=average_porosity).grid(row=2,column=6,padx = 40,pady=10, sticky =W)
 
-
+# RELATIVE PERMEABILITY OF WATER AT 1-SOR.
 def relative_perm_1_SOR(entries):
+    global SOR
     SOR = float(entries['SOR'].get())
     KRW_1_SOR = '%.3f' % RPERM_data.loc[RPERM_data.SW == 1-SOR,'KRW'].values[0]
     Label(second_frame, text=  str(KRW_1_SOR),justify = LEFT, relief = SUNKEN).grid(row = 3, column = 7,padx = 40,pady=5, sticky =W)
-Button(second_frame,text='Relative Permeability at 1-SOR',bg = '#337ab7',fg = 'white',cursor='hand2',command=(lambda: relative_perm_1_SOR(entries))).grid(row=2,column=7,padx = 40,pady=10, sticky =W)    
+Button(second_frame,text='Relative Permeability at 1-SOR',bg = '#337ab7',fg = 'white',command=(lambda: relative_perm_1_SOR(entries))).grid(row=2,column=7,padx = 40,pady=10, sticky =W)    
 
 
+
+# RELATIVE PERMEABILITY OF OIL AT INITIAL WATER SATURATION.
 def relative_perm_SWI(entries):
+    global SWI
     SWI = float(entries['SWI'].get())
     KRO_SWI = '%.3f' % RPERM_data.loc[RPERM_data.SW == SWI,'KRO'].values[0]
     Label(second_frame, text= str(KRO_SWI),justify = LEFT, relief = SUNKEN).grid(row = 5, column = 6,padx = 40,pady=5, sticky =W)
-Button(second_frame,text='Relative Permeability at Initial Water Saturation',bg = '#337ab7',fg = 'white',cursor='hand2',command=(lambda: relative_perm_SWI(entries))).grid(row=4,column=6,padx = 40,pady=10, sticky =W)
+Button(second_frame,text='Relative Permeability at Initial Water Saturation',bg = '#337ab7',fg = 'white',command=(lambda: relative_perm_SWI(entries))).grid(row=4,column=6,padx = 40,pady=10, sticky =W)
+
+#CALCULATING THE WATER MOBILITY
+def water_mobilty(entries):
+    global VISW
+    VISW = float(entries['VISW'].get())
+    Water_Mobility =  permeability_array*KRW_1_SOR/VISW
+    Label(second_frame, text=str(Water_Mobility),justify = LEFT, relief = SUNKEN).grid(row = 11, column = 6,padx = 40,pady=5, sticky =W)
+Button(second_frame,text='Water Mobility',bg = '#337ab7',fg = 'white',command=(lambda: water_mobilty(entries))).grid(row=10,column=6,padx = 40,pady=10, sticky =W)
+
+
+#CALCULATING THE WATER MOBILITY
+def oil_mobilty(entries):
+    global VISO
+    VISO = float(entries['VISO'].get())
+    Oil_Mobility =  permeability_array*KRO_SWI/VISO
+    Label(second_frame, text=str(Oil_Mobility),justify = LEFT, relief = SUNKEN).grid(row = 11, column = 7,padx = 40,pady=5, sticky =W)
+Button(second_frame,text='Oil Mobility',bg = '#337ab7',fg = 'white',command=(lambda: oil_mobilty(entries))).grid(row=10,column=7,padx = 40,pady=10, sticky =W)
 
 
 
+
+# CALCULATING THE MOBILITY RATIO, M.
 def mobility_ratio(entries):
+    global SWI
+    global VISW
+    global VISO
+    global SOR
     SWI = float(entries['SWI'].get())
     VISW = float(entries['VISW'].get())
     VISO = float(entries['VISO'].get())
@@ -452,10 +460,15 @@ def mobility_ratio(entries):
     KRO_SWI = RPERM_data.loc[RPERM_data.SW == SWI,'KRO'].values[0]
     Mobility_Ratio =  KRW_1_SOR*VISO/(KRO_SWI*VISW)
     Label(second_frame, text= str(Mobility_Ratio),justify = LEFT, relief = SUNKEN).grid(row = 7, column = 7,padx = 40,pady=5, sticky =W)
-Button(second_frame,text='Mobility Ratio',bg = '#337ab7',fg = 'white',cursor='hand2',command=(lambda: mobility_ratio(entries))).grid(row=6,column=7,padx = 40,pady=10, sticky =W)
+Button(second_frame,text='Mobility Ratio',bg = '#337ab7',fg = 'white',command=(lambda: mobility_ratio(entries))).grid(row=6,column=7,padx = 40,pady=10, sticky =W)
 
 
+#CALCULATING THE AREAL SWEEP EFFICIENCY AT BREAKTHROUGH
 def areal_sweep_efficiency_at_breakthrough(entries):
+    global SWI
+    global VISW
+    global VISO
+    global SOR
     SWI = float(entries['SWI'].get())
     VISW = float(entries['VISW'].get())
     VISO = float(entries['VISO'].get())
@@ -465,9 +478,10 @@ def areal_sweep_efficiency_at_breakthrough(entries):
     Mobility_Ratio = KRW_1_SOR*VISO/(KRO_SWI*VISW)
     Areal_sweep_efficiency_at_breakthrough =  0.54602036+(0.03170817/Mobility_Ratio)+(0.30222997/math.exp(Mobility_Ratio)-0.0050969*Mobility_Ratio)
     Label(second_frame, text= str(Areal_sweep_efficiency_at_breakthrough),justify = LEFT,relief = SUNKEN).grid(row = 9, column = 6,padx = 40,pady=5, sticky =W)
-Button(second_frame,text='Areal sweep efficiency at breakthrough',bg = '#337ab7',fg = 'white',cursor='hand2',command=(lambda: areal_sweep_efficiency_at_breakthrough(entries))).grid(row=8,column=6,padx = 40,pady=10, sticky =W)
+Button(second_frame,text='Areal sweep efficiency at breakthrough',bg = '#337ab7',fg = 'white',command=(lambda: areal_sweep_efficiency_at_breakthrough(entries))).grid(row=8,column=6,padx = 40,pady=10, sticky =W)
 
 
+#CALCULATING AREA OF RESERVOIR IN ACRES.
 def area_acres(entries):
     global Length_of_bed_ft
     global width_of_bed_ft
@@ -475,9 +489,10 @@ def area_acres(entries):
     width_of_bed_ft = float(entries['width_of_bed_ft'].get())
     Area_acres =  Length_of_bed_ft*width_of_bed_ft/43560
     Label(second_frame, text= str(Area_acres)+ ' acres',justify = LEFT,relief = SUNKEN).grid(row = 9, column = 7,padx = 40,pady=5, sticky =W)
-Button(second_frame,text='Area of the reservoir bed',bg = '#337ab7',fg = 'white',cursor='hand2',command=(lambda: area_acres(entries))).grid(row=8,column=7,padx = 40,pady=10, sticky =W)
+Button(second_frame,text='Area of the reservoir bed',bg = '#337ab7',fg = 'white',command=(lambda: area_acres(entries))).grid(row=8,column=7,padx = 40,pady=10, sticky =W)
 
 
+#CALCULATING THE GROSS ROCK VOLUME.
 def gross_rock_volume(entries):
     global Length_of_bed_ft
     global width_of_bed_ft
@@ -486,9 +501,11 @@ def gross_rock_volume(entries):
     Area_acres = Length_of_bed_ft*width_of_bed_ft/43560
     Gross_rock_volume_acre_ft =  Area_acres*bed_data_sort.THICKNESS.sum()
     Label(second_frame, text= str(Gross_rock_volume_acre_ft)+ ' acres-ft',justify = LEFT,relief = SUNKEN).grid(row = 5, column = 7,padx = 40,pady=5, sticky =W)
-Button(second_frame,text='Gross rock volume',bg = '#337ab7',fg = 'white',cursor='hand2',command=(lambda: gross_rock_volume(entries))).grid(row=4,column=7,padx = 40,pady=10, sticky =W)
+Button(second_frame,text='Gross rock volume',bg = '#337ab7',fg = 'white',command=(lambda: gross_rock_volume(entries))).grid(row=4,column=7,padx = 40,pady=10, sticky =W)
 
 
+
+#CALCULATING DISPLACEMENT EFFICIENCY
 def displacement_efficiency(entries):
     global SGI
     global SWI
@@ -498,9 +515,10 @@ def displacement_efficiency(entries):
     SGI = float(entries['SGI'].get())
     Displacement_efficiency =  (1-SWI-SGI-SOR)/(1-SWI-SGI)
     Label(second_frame, text= str(Displacement_efficiency),justify = LEFT,relief = SUNKEN).grid(row = 7, column = 6,padx = 40,pady=5, sticky =W)
-Button(second_frame,text='Displacement efficiency',bg = '#337ab7',fg = 'white',cursor='hand2',command=(lambda: displacement_efficiency(entries))).grid(row=6,column=6,padx = 40,pady=10, sticky =W)
+Button(second_frame,text='Displacement efficiency',bg = '#337ab7',fg = 'white',command=(lambda: displacement_efficiency(entries))).grid(row=6,column=6,padx = 40,pady=10, sticky =W)
 
 
+#CALCULATING THE AREAL SWEEP EFFICIENCY
 def areal_sweep_efficiency(entries):
     global SGI
     global SWI
@@ -522,7 +540,8 @@ def areal_sweep_efficiency(entries):
     Displacement_efficiency = (1-SWI-SGI-SOR)/(1-SWI-SGI)
     Areal_sweep_efficiency =  Areal_sweep_efficiency_at_breakthrough+0.2749*np.log((1/Displacement_efficiency))
     Label(second_frame, text= str(Areal_sweep_efficiency),justify = LEFT,relief = SUNKEN).grid(row = 13, column = 6,padx = 40,pady=10, sticky =W)
-Button(second_frame,text='Areal sweep efficiency',bg = '#337ab7',fg = 'white',cursor='hand2',command=(lambda: areal_sweep_efficiency(entries))).grid(row=12,column=6,padx = 40,pady=10, sticky =W)
+Button(second_frame,text='Areal sweep efficiency',bg = '#337ab7',fg = 'white',command=(lambda: areal_sweep_efficiency(entries))).grid(row=12,column=6,padx = 40,pady=10, sticky =W)
+
 
 #============================================================================================================================================================
 
@@ -533,36 +552,23 @@ Layer_column = bed_data_sort['LAYER'].to_numpy()
 Layer_table =  pd.DataFrame(Layer_column, columns = ['LAYERS'])
 
 
-#==================================================================================================================================================================
-
-#Calculating the oil mobility ratio
-
-KRO_SWI = RPERM_data.loc[RPERM_data.SW == SWI,'KRO'].values[0]
-Oil_Mobility_array =  permeability_array*KRO_SWI/VISO
-Oil_Mobility_table = pd.DataFrame(Oil_Mobility_array, columns = ['Oil Mobility'])
-
-#Label(second_frame, text=str(Oil_Mobility),justify = LEFT, relief = SUNKEN).grid(row = 11, column = 7,padx = 40,pady=5, sticky =W)
-#Button(second_frame,text='Oil Mobility',bg = '#337ab7',fg = 'white',command=(lambda: oil_mobilty(entries))).grid(row=10,column=7,padx = 40,pady=10, sticky =W)
-
-
-KRW_1_SOR = RPERM_data.loc[RPERM_data.SW == 1-SOR,'KRW'].values[0]
-Water_Mobility_array =  permeability_array*KRW_1_SOR/VISW
-Water_Mobility_table = pd.DataFrame(Water_Mobility_array, columns = ['Water Mobility'])
-
-#Label(second_frame, text=str(Water_Mobility),justify = LEFT, relief = SUNKEN).grid(row = 11, column = 6,padx = 40,pady=5, sticky =W)
-#Button(second_frame,text='Water Mobility',bg = '#337ab7',fg = 'white',command=(lambda: water_mobilty(entries))).grid(row=10,column=6,padx = 40,pady=10, sticky =W)
-
-
-
-#==========================================================================================================================
-
-
 #This code calculates the list of waterflood front location as each layer breaksthrough
-Front_Location_list = []
+
+
+
+
 KRW_1_SOR = RPERM_data.loc[RPERM_data.SW == 1-SOR,'KRW'].values[0]
 KRO_SWI = RPERM_data.loc[RPERM_data.SW == SWI,'KRO'].values[0]
 Mobility_Ratio = KRW_1_SOR*VISO/(KRO_SWI*VISW)
+Areal_sweep_efficiency_at_breakthrough = 0.54602036+(0.03170817/Mobility_Ratio)+(0.30222997/math.exp(Mobility_Ratio)-0.0050969*Mobility_Ratio)
+Displacement_efficiency = (1-SWI-SGI-SOR)/(1-SWI-SGI)
+Areal_sweep_efficiency =  Areal_sweep_efficiency_at_breakthrough+0.2749*np.log((1/Displacement_efficiency))
+Area_acres = Length_of_bed_ft*width_of_bed_ft/43560
+Gross_rock_volume_acre_ft =  Area_acres*bed_data_sort.THICKNESS.sum()
+
+Front_Location_list = []
 for permeability_index1 in range(len(permeability_array)):
+    #Front_Location_list = []
     Front_Location = (Mobility_Ratio - np.sqrt(Mobility_Ratio**2+List_of_permeability_ratio_DataTable[permeability_index1]*(1-Mobility_Ratio**2)))/(Mobility_Ratio-1)
     Front_Location_list.append(Front_Location)
 
@@ -573,6 +579,7 @@ Front_Location_list_DataTable = pd.DataFrame(Front_Location_list).transpose().re
 
 
 # CALCULATING THE OIL FLOW RATE IN EACH BED AS EACH BED BREAKS THROUGH
+
 Water_Mobility = permeability_array*KRW_1_SOR/VISW
 Water_Flowrate_per_bed = (width_of_bed_ft*bed_data_sort['THICKNESS']*Inj_Pressure_differential/Length_of_bed_ft)*Water_Mobility
     
@@ -633,8 +640,8 @@ Average_porosity = np.mean(bed_data_sort.POROSITY)
 Area_acres = Length_of_bed_ft*width_of_bed_ft/43560
 Gross_rock_volume_acre_ft = Area_acres*bed_data_sort.THICKNESS.sum()
 
-KRW_1_SOR = RPERM_data.loc[RPERM_data.SW == 1-SOR,'KRW'].values[0]
-KRO_SWI = RPERM_data.loc[RPERM_data.SW == SWI,'KRO'].values[0]
+#KRW_1_SOR = RPERM_data.loc[RPERM_data.SW == 1-SOR,'KRW'].values[0]
+#KRO_SWI = RPERM_data.loc[RPERM_data.SW == SWI,'KRO'].values[0]
 Mobility_Ratio = KRW_1_SOR*VISO/(KRO_SWI*VISW)
 
 Areal_sweep_efficiency_at_breakthrough = 0.54602036+(0.03170817/Mobility_Ratio)+(0.30222997/math.exp(Mobility_Ratio)-0.0050969*Mobility_Ratio)
@@ -716,13 +723,58 @@ Time_years_table = Time_years.rename(columns ={'Time (Days)': 'Time (Years)'}, i
 
 
 # TABLE OF ALL OBTAINED VALUES.
-All_tables =pd.concat([Layer_table,Oil_Mobility_table,Water_Mobility_table,Water_Flowrate_per_bed_table, coverage_table, WOR_table, Cumulative_oil_recovery, Water_volume_to_fillup_gas_space_table, Producing_water_oil_ratio, Cumulative_water_produced, Cumulative_water_injected_table, Time_days_table, Time_years_table,Front_Location_list_DataTable,Oil_Flowrate_per_bed_table], axis = 1).drop([-1])
+All_tables =pd.concat([Layer_table,Water_Flowrate_per_bed_table, coverage_table, WOR_table, Cumulative_oil_recovery, Water_volume_to_fillup_gas_space_table, Producing_water_oil_ratio, Cumulative_water_produced, Cumulative_water_injected_table, Time_days_table, Time_years_table,Front_Location_list_DataTable,Oil_Flowrate_per_bed_table], axis = 1).drop([-1])
+
+
+#====================================================================================================================================================
+
+
+
 
 
 #================================================================================================================================
 
-root.geometry("800x500")
 
+
+
+#root = Tk()
+
+root.geometry("1200x600")
+
+
+#creation of an instance
+#app = Window(root)
+
+#mainloop 
 root.mainloop() 
+
+
+# In[63]:
+
+
+
+
+
+# In[23]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
 
 
